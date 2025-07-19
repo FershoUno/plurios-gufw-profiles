@@ -1,0 +1,10 @@
+Package: CHANGE_NAME
+Version: CHANGE_VERSION
+Architecture: CHANGE_ARCH
+Section: CHANGE_SECTION
+Priority: CHANGE_PRIORITY
+Depends: gufw
+Installed-Size: CHANGE_SIZE
+Maintainer: CHANGE_MAINTAINER
+Copyright: CHANGE_COPYRIGHT
+Description: CHANGE_DESCRIPTION

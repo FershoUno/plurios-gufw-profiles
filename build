@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# verifica si el script se ejecuta como root
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root."
+  exit 1
+fi
+
+if [ ! -f MAINTAINER ];then
+echo "No se encontro MAINTAINER, generando archivo nuevo"
+cat <<EOF > MAINTAINER
+# =================================
+# definir variables para el paquete
+# =================================
+
+# Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
+NAME="holamundo"
+
+# Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
+VERSION="1.0.0"
+
+# Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
+ARCH="amd64"
+
+# Sección: misc, web, utils, editors, admin, net, games, etc.
+SECTION="misc"
+
+# Prioridad: required, important, standard, optional (recomendado), extra
+PRIORITY="optional"
+
+# Nombre y correo del mantenedor del paquete
+MAINTAINER="User Name <email@email.com>"
+
+# Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
+COPYRIGHT="GPL-3.0-or-later"
+
+# Breve descripción (máx. ~80 caracteres), sin redundancia
+DESCRIPTION="Hola Mundo simple en Python3"
+
+# Variable para la descripción del lanzador
+# Descripción corta del programa
+COMMENT="Hola Mundo Simple para PluriOS"
+EOF
+
+echo "Archivo generado, edite la información necesaria"
+exit 0
+fi
+
+# importar variables MAINTAINER
+. MAINTAINER || exit 1
+
+# eliminar archivos no relevantes para subir a github
+# estas instrucciones puede variar dependiendo los archivos innecesarios del proyecto
+rm -rf *.deb *.tar.gz ${NAME}_*_${ARCH}*  2>/dev/null
+sleep 2
+
+# Crear el nombre del directorio de trabajo 
+# Ej: mi-programa_0.3_amd64
+DIR_PACKAGE="${NAME}_${VERSION}_${ARCH}"
+
+# Crea el directorio de trabajo 
+mkdir -p $DIR_PACKAGE 
+
+if [ ! -d DEBIAN ];then
+# Crea el directorio DEBIAN
+mkdir -p DEBIAN/
+
+# Genera el archivo control de DEBIAN
+cat <<EOF > DEBIAN/control
+Package: CHANGE_NAME
+Version: CHANGE_VERSION
+Architecture: CHANGE_ARCH
+Section: CHANGE_SECTION
+Priority: CHANGE_PRIORITY
+Installed-Size: CHANGE_SIZE
+Maintainer: CHANGE_MAINTAINER
+Copyright: CHANGE_COPYRIGHT
+Description: CHANGE_DESCRIPTION
+EOF
+
+echo "Directorio generado: DEBIAN/control"
+exit 0
+fi
+
+
+# ================================
+# Copia y pega los directorios necesarios para el paquete
+# modifique esta sección para copiar los archivos necesarios de su código al directorio de trabajo $DIR_PACKAGE
+# ================================
+cp -r DEBIAN $DIR_PACKAGE
+
+cp -r etc $DIR_PACKAGE/
+
+chmod 600 $DIR_PACKAGE/etc/gufw/*.profile
+
+
+
+
+
+# ================================
+
+# verifica si existe un lanzador para integrarlo con su icono en formato SVG
+if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
+  mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
+  cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
+  cp $NAME.svg $DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/
+  
+  # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
+  sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  sed -i "s/CHANGE_COMMENT/$COMMENT/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+fi
+
+# Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
+SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
+
+# Cambia información del archivo control como ser: nombre, versión, tamaño
+sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_ARCH/$ARCH/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_SECTION/$SECTION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_PRIORITY/$PRIORITY/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_MAINTAINER/$MAINTAINER/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_COPYRIGHT/$COPYRIGHT/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_DESCRIPTION/$DESCRIPTION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
+
+# Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
+for script in postinst preinst postrm prerm; do
+  if [ -f "$DIR_PACKAGE/DEBIAN/$script" ]; then
+    chmod 755 $DIR_PACKAGE/DEBIAN/$script
+  fi
+done
+
+# Agrega propietarios y permisos correspondientes a los ficheros
+chown -R root:root $DIR_PACKAGE/
+
+# Crea el paquete DEB a partir del directorio de trabajo
+dpkg-deb --build $DIR_PACKAGE/

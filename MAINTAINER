@@ -1,0 +1,31 @@
+# =================================
+# definir variables para el paquete
+# =================================
+
+# Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
+NAME="plurios-gufw-profiles"
+
+# Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
+VERSION="1.0.0"
+
+# Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
+ARCH="all"
+
+# Sección: misc, web, utils, editors, admin, net, games, etc.
+SECTION="misc"
+
+# Prioridad: required, important, standard, optional (recomendado), extra
+PRIORITY="optional"
+
+# Nombre y correo del mantenedor del paquete
+MAINTAINER="Fersho Uno <fersh0un0@gmail.com>"
+
+# Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
+COPYRIGHT="GPL-3.0-or-later"
+
+# Breve descripción (máx. ~80 caracteres), sin redundancia
+DESCRIPTION="Paquete de perfiles de configuración para GUFW."
+
+# Variable para la descripción del lanzador
+# Descripción corta del programa
+COMMENT=""
