@@ -94,9 +94,6 @@ cp -r etc $DIR_PACKAGE/
 chmod 600 $DIR_PACKAGE/etc/gufw/*.profile
 
 
-
-
-
 # ================================
 
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
