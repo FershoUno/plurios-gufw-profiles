@@ -1,1 +1,3 @@
 # plurios-gufw-profiles
+
+## características
